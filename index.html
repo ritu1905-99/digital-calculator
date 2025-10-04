@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .calculator {
+            background: #1e1e2f;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            width: 340px;
+        }
+
+        .display {
+            background: #2d2d44;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+        }
+
+        .previous {
+            color: #8b8b9f;
+            font-size: 16px;
+            min-height: 20px;
+            margin-bottom: 5px;
+        }
+
+        .current {
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: 300;
+            word-break: break-all;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 22px;
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #ffffff;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .number, .decimal {
+            background: #2d2d44;
+        }
+
+        .number:hover, .decimal:hover {
+            background: #3a3a52;
+        }
+
+        .operator {
+            background: #667eea;
+        }
+
+        .operator:hover {
+            background: #7c8ff5;
+        }
+
+        .equals {
+            background: #ff6b6b;
+            grid-column: span 2;
+        }
+
+        .equals:hover {
+            background: #ff8787;
+        }
+
+        .clear {
+            background: #ff6b6b;
+            grid-column: span 2;
+        }
+
+        .clear:hover {
+            background: #ff8787;
+        }
+
+        .delete {
+            background: #ffa500;
+        }
+
+        .delete:hover {
+            background: #ffb733;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="display">
+            <div class="previous" id="previous"></div>
+            <div class="current" id="current">0</div>
+        </div>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">AC</button>
+            <button class="delete" onclick="deleteDigit()">DEL</button>
+            <button class="operator" onclick="chooseOperator('÷')">÷</button>
+            
+            <button class="number" onclick="appendNumber('7')">7</button>
+            <button class="number" onclick="appendNumber('8')">8</button>
+            <button class="number" onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="chooseOperator('×')">×</button>
+            
+            <button class="number" onclick="appendNumber('4')">4</button>
+            <button class="number" onclick="appendNumber('5')">5</button>
+            <button class="number" onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="chooseOperator('-')">-</button>
+            
+            <button class="number" onclick="appendNumber('1')">1</button>
+            <button class="number" onclick="appendNumber('2')">2</button>
+            <button class="number" onclick="appendNumber('3')">3</button>
+            <button class="operator" onclick="chooseOperator('+')">+</button>
+            
+            <button class="number" onclick="appendNumber('0')">0</button>
+            <button class="decimal" onclick="appendNumber('.')">.</button>
+            <button class="equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentDisplay = '0';
+        let previousDisplay = '';
+        let operation = null;
+        let shouldResetDisplay = false;
+
+        const currentElement = document.getElementById('current');
+        const previousElement = document.getElementById('previous');
+
+        function updateDisplay() {
+            currentElement.textContent = currentDisplay;
+            if (operation !== null) {
+                previousElement.textContent = `${previousDisplay} ${operation}`;
+            } else {
+                previousElement.textContent = '';
+            }
+        }
+
+        function appendNumber(num) {
+            if (shouldResetDisplay) {
+                currentDisplay = '';
+                shouldResetDisplay = false;
+            }
+            
+            if (num === '.' && currentDisplay.includes('.')) return;
+            
+            if (currentDisplay === '0' && num !== '.') {
+                currentDisplay = num;
+            } else {
+                currentDisplay += num;
+            }
+            
+            updateDisplay();
+        }
+
+        function chooseOperator(op) {
+            if (operation !== null && !shouldResetDisplay) {
+                calculate();
+            }
+            
+            operation = op;
+            previousDisplay = currentDisplay;
+            shouldResetDisplay = true;
+            updateDisplay();
+        }
+
+        function calculate() {
+            if (operation === null || shouldResetDisplay) return;
+            
+            const prev = parseFloat(previousDisplay);
+            const current = parseFloat(currentDisplay);
+            
+            if (isNaN(prev) || isNaN(current)) return;
+            
+            let result;
+            switch (operation) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '×':
+                    result = prev * current;
+                    break;
+                case '÷':
+                    if (current === 0) {
+                        alert('Cannot divide by zero!');
+                        clearDisplay();
+                        return;
+                    }
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            
+            currentDisplay = result.toString();
+            operation = null;
+            previousDisplay = '';
+            shouldResetDisplay = true;
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentDisplay = '0';
+            previousDisplay = '';
+            operation = null;
+            shouldResetDisplay = false;
+            updateDisplay();
+        }
+
+        function deleteDigit() {
+            if (currentDisplay.length === 1) {
+                currentDisplay = '0';
+            } else {
+                currentDisplay = currentDisplay.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+            if (e.key === '.') appendNumber('.');
+            if (e.key === '+' || e.key === '-') chooseOperator(e.key);
+            if (e.key === '*') chooseOperator('×');
+            if (e.key === '/') {
+                e.preventDefault();
+                chooseOperator('÷');
+            }
+            if (e.key === 'Enter' || e.key === '=') calculate();
+            if (e.key === 'Escape') clearDisplay();
+            if (e.key === 'Backspace') deleteDigit();
+        });
+
+        updateDisplay();
+    </script>
+</body>
+</html>
